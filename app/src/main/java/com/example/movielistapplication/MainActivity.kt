@@ -2,6 +2,7 @@ package com.example.movielistapplication
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +50,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberImagePainter
 import com.example.movielistapplication.data.Movie
+import com.example.movielistapplication.data.MovieViewModel
 import com.example.movielistapplication.ui.theme.MovieListApplicationTheme
 
 sealed class Screen(val route: String) {
@@ -157,11 +161,11 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 }
             )
         },
-        content = {
+        content = { PaddingValues->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(PaddingValues),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -213,22 +217,22 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
+    val movieViewModel = remember { MovieViewModel() }
     var searchQuery by remember { mutableStateOf("") }
-    val movieList = listOf(
-        // Dummy movie data (replace with actual images)
-        R.drawable.login_page_image,
-        R.drawable.login_page_image,
-        R.drawable.login_page_image,
-        R.drawable.login_page_image,
-        R.drawable.login_page_image,
-        R.drawable.login_page_image,
-        R.drawable.login_page_image,
-        R.drawable.login_page_image
-    )
+    LaunchedEffect(Unit) {
+        movieViewModel.fetchMovies("Movie") // You can set an initial query
+    }
+    // Observe the movie list from the ViewModel
+    val movieList = movieViewModel.movieList
+
+    // Log all movies retrieved
+    if (movieList.isNotEmpty()) {
+        Log.d("JACK", "Retrieved movies list: ${movieList.joinToString { it.Title }}")
+    }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Movie Details") },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -239,23 +243,28 @@ fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
                 }
             )
         },
-        content = {
+        content = { PaddingValues->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(PaddingValues)
             ) {
                 // Search Bar
                 TextField(
                     value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    onValueChange = {
+                        searchQuery = it
+                        movieViewModel.fetchMovies(it)
+                    },
                     label = { Text("Search Movies") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Search
                     ),
                     keyboardActions = KeyboardActions(
-                        onSearch = { /* Handle search action */ }
+                        onSearch = {
+                            movieViewModel.fetchMovies(searchQuery)
+                        }
                     )
                 )
 
@@ -268,7 +277,7 @@ fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movieList.size) { index ->
-                        MovieButton(imageResId = movieList[index], onClickDetail)
+                        MovieButton(imageUrl = movieList[index].Poster, onClickDetail)
                     }
                 }
             }
@@ -277,7 +286,7 @@ fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
 }
 
 @Composable
-fun MovieButton(imageResId: Int, onClickedDetail: () -> Unit) {
+fun MovieButton(imageUrl: String, onClickedDetail: () -> Unit) {
     // Button containing an image of the movie
     Button(
         onClick = { onClickedDetail() },
@@ -287,7 +296,7 @@ fun MovieButton(imageResId: Int, onClickedDetail: () -> Unit) {
             .height(180.dp) // Set height for button
     ) {
         Image(
-            painter = painterResource(id = imageResId),
+            painter = rememberImagePainter(data = imageUrl),
             contentDescription = "Movie Image",
             modifier = Modifier.fillMaxSize()
         )
@@ -312,11 +321,11 @@ fun MovieDetailsScreen(navController: NavController, movie: Movie) {
                 }
             )
         },
-        content = {
+        content = { PaddingValues->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(PaddingValues)
             ) {
                 // Movie Image
                 Image(
