@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.text.KeyboardActions
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.movielistapplication.data.Movie
 import com.example.movielistapplication.ui.theme.MovieListApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +50,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     //MainPage()
-                    MovieListScreen()
+                    val selectedMovie = Movie()
+                    MovieDetailsScreen(movie = selectedMovie) // Correctly passing the movie object
                 }
             }
         }
@@ -202,6 +205,74 @@ fun MovieButton(imageResId: Int) {
     }
 }
 
+@Composable
+fun MovieDetailsScreen(movie: Movie) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Movie Image
+        Image(
+            painter = painterResource(R.drawable.login_page_image),
+            contentDescription = "Movie Poster",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .padding(bottom = 16.dp)
+        )
+
+        // Movie Rating
+        Text(
+            text = "Rating: ${movie.Rating}",
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Movie Title
+        Text(
+            text = "Title: ${movie.Title}",
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Movie Category
+        Text(
+            text = "Category: ${movie.Genre}",
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Movie Header
+        Text(
+            text = "Header: ${movie.Header}",
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Movie Plot Summary
+        Text(
+            text = "Plot Summary: ${movie.Plot}",
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Other Ratings (if any)
+        Text(
+            text = "Other Ratings",
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Horizontal Scrollable List of Buttons
+        Text(
+            text = "Other Rating Categories",
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(movie.OtherRatingTypes) { relatedMovie ->
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun MainPagePreview() {
@@ -222,5 +293,14 @@ fun LoginScreenPreview() {
 fun MovieListScreenPreview() {
     MovieListApplicationTheme {
         MovieListScreen()
+    }
+}
+@Preview(showBackground = true)
+@Composable
+fun MovieDetailsScreenPreview() {
+    MovieListApplicationTheme {
+        val mockMovie = Movie(
+        )
+        MovieDetailsScreen(mockMovie)
     }
 }
