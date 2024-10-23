@@ -6,12 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     //MainPage()
-                    LoginScreen(onLoginSuccess = {})
+                    MovieListScreen()
                 }
             }
         }
@@ -131,6 +138,70 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         }
     }
 }
+
+@Composable
+fun MovieListScreen() {
+    var searchQuery by remember { mutableStateOf("") }
+    val movieList = listOf(
+        // Dummy movie data (replace with actual images)
+        R.drawable.login_page_image,
+        R.drawable.login_page_image,
+        R.drawable.login_page_image,
+        R.drawable.login_page_image,
+        R.drawable.login_page_image,
+        R.drawable.login_page_image,
+        R.drawable.login_page_image,
+        R.drawable.login_page_image
+    )
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        // Search Bar
+        TextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            label = { Text("Search Movies") },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = { /* Handle search action */ }
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Movie Buttons Grid
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2), // 2 columns
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(movieList.size) { index ->
+                MovieButton(imageResId = movieList[index])
+            }
+        }
+    }
+}
+
+@Composable
+fun MovieButton(imageResId: Int) {
+    // Button containing an image of the movie
+    Button(
+        onClick = { /* Handle button click */ },
+        modifier = Modifier
+            .padding(8.dp)
+            .width(120.dp) // Set width for button
+            .height(180.dp) // Set height for button
+    ) {
+        Image(
+            painter = painterResource(id = imageResId),
+            contentDescription = "Movie Image",
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun MainPagePreview() {
@@ -141,5 +212,15 @@ fun MainPagePreview() {
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(onLoginSuccess = { /* No action needed for preview */ })
+    MovieListApplicationTheme {
+        LoginScreen(onLoginSuccess = { /* No action needed for preview */ })
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MovieListScreenPreview() {
+    MovieListApplicationTheme {
+        MovieListScreen()
+    }
 }
