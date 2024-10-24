@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import coil.compose.rememberImagePainter
-import com.example.movielistapplication.data.Movie
+import coil.compose.rememberAsyncImagePainter
 import com.example.movielistapplication.data.MovieViewModel
 import com.example.movielistapplication.ui.theme.MovieListApplicationTheme
 
@@ -62,6 +63,7 @@ sealed class Screen(val route: String) {
     data object MovieDetailsScreen : Screen("movie_details/{movieId}")
 }
 class MainActivity : ComponentActivity() {
+    private val movieViewModel: MovieViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -93,6 +95,7 @@ class MainActivity : ComponentActivity() {
                         composable(Screen.MovieListScreen.route) {
                             MovieListScreen(
                                 navController = navController,
+                                movieViewModel = movieViewModel,
                                 onClickDetail = {
                                     navController.navigate(Screen.MovieDetailsScreen.route)
                                 }
@@ -100,8 +103,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Screen.MovieDetailsScreen.route) {
-                            val movie = Movie()
-                            MovieDetailsScreen(navController, movie)
+                            MovieDetailsScreen(navController, movieViewModel)
                         }
                     }
                 }
@@ -161,11 +163,11 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 }
             )
         },
-        content = { PaddingValues->
+        content = { paddingValues->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(PaddingValues),
+                    .padding(paddingValues),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -216,8 +218,11 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
-    val movieViewModel = remember { MovieViewModel() }
+fun MovieListScreen(
+    navController: NavController,
+    onClickDetail: () -> Unit,
+    movieViewModel: MovieViewModel
+) {
     var searchQuery by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         movieViewModel.fetchMovies("Movie") // You can set an initial query
@@ -243,11 +248,11 @@ fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
                 }
             )
         },
-        content = { PaddingValues->
+        content = { paddingValues->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(PaddingValues)
+                    .padding(paddingValues)
             ) {
                 // Search Bar
                 TextField(
@@ -277,7 +282,11 @@ fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movieList.size) { index ->
-                        MovieButton(imageUrl = movieList[index].Poster, onClickDetail)
+                        MovieButton(imageUrl = movieList[index].Poster, onClickDetail  = {
+                                movieViewModel.setMovieId(movieList[index].imdbID)
+                                onClickDetail()
+                            }
+                        )
                     }
                 }
             }
@@ -286,17 +295,17 @@ fun MovieListScreen(navController: NavController, onClickDetail:() -> Unit) {
 }
 
 @Composable
-fun MovieButton(imageUrl: String, onClickedDetail: () -> Unit) {
+fun MovieButton(imageUrl: String, onClickDetail: () -> Unit){
     // Button containing an image of the movie
     Button(
-        onClick = { onClickedDetail() },
+        onClick = { onClickDetail() },
         modifier = Modifier
             .padding(8.dp)
             .width(120.dp) // Set width for button
             .height(180.dp) // Set height for button
     ) {
         Image(
-            painter = rememberImagePainter(data = imageUrl),
+            painter = rememberAsyncImagePainter(model = imageUrl),
             contentDescription = "Movie Image",
             modifier = Modifier.fillMaxSize()
         )
@@ -306,11 +315,20 @@ fun MovieButton(imageUrl: String, onClickedDetail: () -> Unit) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieDetailsScreen(navController: NavController, movie: Movie) {
+fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewModel) {
+    // Collect the state from the ViewModel
+    val movieDetail by movieViewModel.movieDetail.collectAsState()
+    val movieID by movieViewModel.movieId.collectAsState()
+    // Fetch movie details when the composable is first composed
+    LaunchedEffect(movieID) {
+        movieViewModel.fetchMovieDetails(movieID ?: "Movie Details") // Example movie ID
+        Log.d("JACK", "Movie Detail: $movieDetail")
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Movie Details") },
+                title = { Text(text = movieDetail?.Title ?: "Movie Details") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -321,15 +339,16 @@ fun MovieDetailsScreen(navController: NavController, movie: Movie) {
                 }
             )
         },
-        content = { PaddingValues->
+        content = { paddingValues->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(PaddingValues)
+                    .padding(paddingValues)
             ) {
                 // Movie Image
+                val defaultPoster = "https://dummyimage.com/300x450/000/fff.png&text=No+Poster"
                 Image(
-                    painter = painterResource(R.drawable.login_page_image),
+                    painter = rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster),
                     contentDescription = "Movie Poster",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -339,31 +358,31 @@ fun MovieDetailsScreen(navController: NavController, movie: Movie) {
 
                 // Movie Rating
                 Text(
-                    text = "Rating: ${movie.Rating}",
+                    text = "Rating: ",//${movieDetailResponse.Rating}",
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Movie Title
                 Text(
-                    text = "Title: ${movie.Title}",
+                    text = "Title: ${movieDetail?.Title ?: "N/A"}",
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Movie Category
                 Text(
-                    text = "Category: ${movie.Genre}",
+                    text = "Category: ${movieDetail?.Genre ?: "N/A"}",
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Movie Header
                 Text(
-                    text = "Header: ${movie.Header}",
+                    text = "Header: ",//${movieDetailResponse.Header}",
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Movie Plot Summary
                 Text(
-                    text = "Plot Summary: ${movie.Plot}",
+                    text = "Plot Summary: ${movieDetail?.Plot ?: "N/A"}",
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -382,7 +401,9 @@ fun MovieDetailsScreen(navController: NavController, movie: Movie) {
                     contentPadding = PaddingValues(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(movie.OtherRatingTypes) {
+                    movieDetail?.let {
+                        items(it.OtherRatingTypes) {
+                        }
                     }
                 }
             }
@@ -411,7 +432,12 @@ fun LoginScreenPreview() {
 fun MovieListScreenPreview() {
     MovieListApplicationTheme {
         val mockNavController = rememberNavController()
-        MovieListScreen(mockNavController, onClickDetail = { /* No action needed for preview */ })
+        val mockViewModel = MovieViewModel()
+        MovieListScreen(
+            mockNavController,
+            onClickDetail = { /* No action needed for preview */ },
+            mockViewModel
+        )
     }
 }
 @Preview(showBackground = true)
@@ -419,7 +445,7 @@ fun MovieListScreenPreview() {
 fun MovieDetailsScreenPreview() {
     MovieListApplicationTheme {
         val mockNavController = rememberNavController()
-        val mockMovie = Movie()
-        MovieDetailsScreen(mockNavController, mockMovie)
+        val mockViewModel = MovieViewModel()
+        MovieDetailsScreen(mockNavController, mockViewModel)
     }
 }
