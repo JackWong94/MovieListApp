@@ -62,7 +62,7 @@ data class MovieDetailResponse(
     val Response: String,
     val Error: String? // Optional field for error messages
 )
-class MovieViewModel() : ViewModel() {
+class MovieViewModel(repository: Any?) : ViewModel() {
     private val movieService: MovieService
 
     // State to hold the list of movies

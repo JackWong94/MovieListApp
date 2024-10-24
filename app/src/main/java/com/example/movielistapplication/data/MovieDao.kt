@@ -7,11 +7,11 @@ import androidx.room.Query
 @Dao
 interface MovieDao {
     @Insert
-    suspend fun insert(movie: Movie)
+    fun insert(movie: Movie)
 
     @Query("SELECT * FROM movies")
-    suspend fun getAllMovies(): List<Movie>
+    fun getAllMovies(): List<Movie>
 
     @Query("SELECT * FROM movies WHERE imdbID = :id")
-    suspend fun getMovieById(id: String): Movie?
+    fun getMovieById(id: String): Movie?
 }

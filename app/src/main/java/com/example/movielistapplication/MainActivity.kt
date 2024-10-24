@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,11 +47,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.movielistapplication.data.MovieDatabase
+import com.example.movielistapplication.data.MovieRepository
 import com.example.movielistapplication.data.MovieViewModel
 import com.example.movielistapplication.ui.theme.MovieListApplicationTheme
 
@@ -63,9 +65,15 @@ sealed class Screen(val route: String) {
     data object MovieDetailsScreen : Screen("movie_details/{movieId}")
 }
 class MainActivity : ComponentActivity() {
-    private val movieViewModel: MovieViewModel by viewModels()
+    private lateinit var movieViewModel: MovieViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initialize the database
+        val database = MovieDatabase.getDatabase(application)
+        val movieDao = database.movieDao()
+        val repository = MovieRepository(movieDao)
+        movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository)).get(MovieViewModel::class.java)
+
         setContent {
             MovieListApplicationTheme {
                 Surface(
@@ -415,13 +423,13 @@ fun LoginScreenPreview() {
         LoginScreen(mockNavController) { /* No action needed for preview */ }
     }
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun MovieListScreenPreview() {
     MovieListApplicationTheme {
         val mockNavController = rememberNavController()
-        val mockViewModel = MovieViewModel()
+        val mockViewModel = MovieViewModel(repository)
         MovieListScreen(
             mockNavController,
             onClickDetail = { /* No action needed for preview */ },
@@ -434,7 +442,8 @@ fun MovieListScreenPreview() {
 fun MovieDetailsScreenPreview() {
     MovieListApplicationTheme {
         val mockNavController = rememberNavController()
-        val mockViewModel = MovieViewModel()
+        val mockViewModel = MovieViewModel(repository)
         MovieDetailsScreen(mockNavController, mockViewModel)
     }
 }
+*/
