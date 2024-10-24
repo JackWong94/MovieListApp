@@ -62,7 +62,7 @@ data class MovieDetailResponse(
     val Response: String,
     val Error: String? // Optional field for error messages
 )
-class MovieViewModel : ViewModel() {
+class MovieViewModel() : ViewModel() {
     private val movieService: MovieService
 
     // State to hold the list of movies
@@ -85,7 +85,7 @@ class MovieViewModel : ViewModel() {
                 val response = movieService.getMovies("6fc87060", searchQuery, "movie")
                 if (response.Response == "True") {
                     _movieList.clear()
-                    _movieList.addAll(response.Search ?: emptyList())
+                    _movieList.addAll(response.Search)
                     Log.d("JACK", "Success")
                 } else {
                     _movieList.clear() // Handle error case
@@ -110,48 +110,52 @@ class MovieViewModel : ViewModel() {
 
     fun fetchMovieDetails(movieId: Any) {
         viewModelScope.launch {
-            try {
-                Log.d("JACK", "Fetching movie details...")
-                val response = movieService.getMovieDetails("6fc87060", movieId)
-                if (response.Response == "True") {
-                    val movieDetail = MovieDetail(
-                        Title = response.Title,
-                        Year = response.Year,
-                        Rated = response.Rated,
-                        Released = response.Released,
-                        Runtime = response.Runtime,
-                        Genre = response.Genre,
-                        Director = response.Director,
-                        Writer = response.Writer,
-                        Actors = response.Actors,
-                        Plot = response.Plot,
-                        Language = response.Language,
-                        Country = response.Country,
-                        Awards = response.Awards,
-                        Poster = response.Poster,
-                        Ratings = response.Ratings,
-                        Metascore = response.Metascore,
-                        imdbRating = response.imdbRating,
-                        imdbVotes = response.imdbVotes,
-                        imdbID = response.imdbID,
-                        Type = response.Type,
-                        DVD = response.DVD,
-                        BoxOffice = response.BoxOffice,
-                        Production = response.Production,
-                        Website = response.Website,
-                        Response = response.Response,
-                        Error = response.Error
+                try {
+                    Log.d("JACK", "Fetching movie details...")
+                    val response = movieService.getMovieDetails("6fc87060", movieId)
+                    if (response.Response == "True") {
+                        val movieDetail = MovieDetail(
+                            Title = response.Title,
+                            Year = response.Year,
+                            Rated = response.Rated,
+                            Released = response.Released,
+                            Runtime = response.Runtime,
+                            Genre = response.Genre,
+                            Director = response.Director,
+                            Writer = response.Writer,
+                            Actors = response.Actors,
+                            Plot = response.Plot,
+                            Language = response.Language,
+                            Country = response.Country,
+                            Awards = response.Awards,
+                            Poster = response.Poster,
+                            Ratings = response.Ratings,
+                            Metascore = response.Metascore,
+                            imdbRating = response.imdbRating,
+                            imdbVotes = response.imdbVotes,
+                            imdbID = response.imdbID,
+                            Type = response.Type,
+                            DVD = response.DVD,
+                            BoxOffice = response.BoxOffice,
+                            Production = response.Production,
+                            Website = response.Website,
+                            Response = response.Response,
+                            Error = response.Error
+                        )
+                        _movieDetail.value = movieDetail
+                        Log.d("JACK", "Movie details retrieved successfully $movieDetail")
+                    } else {
+                        _movieDetail.value = null // Handle error
+                        Log.d("JACK", "Failed to fetch movie details: ${response.Error}")
+                    }
+                } catch (e: Exception) {
+                    _movieDetail.value = null // Handle error case
+                    Log.e(
+                        "JACK",
+                        "Error fetching movie details: ${e.message ?: "Unknown error"}",
+                        e
                     )
-                    _movieDetail.value = movieDetail
-                    Log.d("JACK", "Movie details retrieved successfully $movieDetail")
-                } else {
-                    _movieDetail.value = null // Handle error
-                    Log.d("JACK", "Failed to fetch movie details: ${response.Error}")
                 }
-            } catch (e: Exception) {
-                _movieDetail.value = null // Handle error case
-                Log.e("JACK", "Error fetching movie details: ${e.message ?: "Unknown error"}", e)
-            }
         }
     }
 }
