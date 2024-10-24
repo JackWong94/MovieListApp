@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -62,9 +64,9 @@ data class MovieDetailResponse(
     val Response: String,
     val Error: String? // Optional field for error messages
 )
-class MovieViewModel(repository: Any?) : ViewModel() {
+class MovieViewModel(repository: MovieRepository?) : ViewModel() {
     private val movieService: MovieService
-
+    private val _repository = repository
     // State to hold the list of movies
     private val _movieList = mutableStateListOf<Movie>() // Assuming Movie is your data class
     val movieList: List<Movie> get() = _movieList
@@ -74,8 +76,8 @@ class MovieViewModel(repository: Any?) : ViewModel() {
             .baseUrl("https://www.omdbapi.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
         movieService = retrofit.create(MovieService::class.java)
+
     }
 
     fun fetchMovies(searchQuery: String) {
@@ -87,13 +89,35 @@ class MovieViewModel(repository: Any?) : ViewModel() {
                     _movieList.clear()
                     _movieList.addAll(response.Search)
                     Log.d("JACK", "Success")
+                    // Save each movie to the local database one by one
+                    response.Search.forEach { movie ->
+                        val movieEntity = Movie(
+                            imdbID = movie.imdbID,
+                            Title = movie.Title,
+                            Year = movie.Year,
+                            Poster = movie.Poster
+                        )
+                        withContext(Dispatchers.IO) {
+                            _repository?.addMovie(movieEntity) // Non-blocking add to database
+                        }
+                    }
                 } else {
                     _movieList.clear() // Handle error case
                     Log.d("JACK", "Fail")
+                    // Fetch all movies from the local database on error
+                    val localMovies = withContext(Dispatchers.IO) {
+                        _repository?.getAllMovies() // Fetch from database
+                    }
+                    _movieList.addAll(localMovies ?: emptyList()) // Safely add local movies
                 }
             } catch (e: Exception) {
                 _movieList.clear() // Handle error case
                 Log.e("JACK", "Error fetching movies: ${e.message ?: "Unknown error"}", e)
+                // Fetch all movies from the local database on error
+                val localMovies = withContext(Dispatchers.IO) {
+                    _repository?.getAllMovies() // Fetch from database
+                }
+                _movieList.addAll(localMovies ?: emptyList()) // Safely add local movies
             }
         }
     }
