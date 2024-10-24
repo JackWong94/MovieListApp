@@ -328,7 +328,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = movieDetail?.Title ?: "Movie Details") },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -358,7 +358,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
 
                 // Movie Rating
                 Text(
-                    text = "Rating: ",//${movieDetailResponse.Rating}",
+                    text = "Rating: ${movieDetail?.Ratings ?: "N/A"}",
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -374,12 +374,6 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Movie Header
-                Text(
-                    text = "Header: ",//${movieDetailResponse.Header}",
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
                 // Movie Plot Summary
                 Text(
                     text = "Plot Summary: ${movieDetail?.Plot ?: "N/A"}",
@@ -392,11 +386,6 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                // Horizontal Scrollable List of Buttons
-                Text(
-                    text = "Other Rating Categories",
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
