@@ -4,12 +4,19 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.util.Base64
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import java.security.MessageDigest
@@ -118,5 +125,42 @@ class TriangleShape(private val triangleHeight: Float, private val triangleBase:
             close() // Close the path to form a triangle
         }
         return Outline.Generic(path)
+    }
+}
+
+@Composable
+fun StarRating(rating: Float) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val clampedRating = rating.coerceIn(0f, 10f)
+        val fullStars = clampedRating.toInt() / 2
+        val hasHalfStar = (clampedRating % 2).toInt() != 0
+
+        // Display full stars
+        repeat(fullStars) {
+            Image(
+                painter = painterResource(id = android.R.drawable.star_big_on), // Filled star
+                contentDescription = "Filled Star",
+                modifier = androidx.compose.ui.Modifier.size(24.dp)
+            )
+        }
+
+        // Display half star if needed
+        if (hasHalfStar) {
+            Image(
+                painter = painterResource(id = android.R.drawable.star_on), // Half star
+                contentDescription = "Half Star",
+                modifier = androidx.compose.ui.Modifier.size(24.dp)
+            )
+        }
+
+        // Display empty stars
+        val emptyStars = (10 - clampedRating.toInt()) / 2
+        repeat(emptyStars) {
+            Image(
+                painter = painterResource(id = android.R.drawable.star_off), // Empty star
+                contentDescription = "Empty Star",
+                modifier = androidx.compose.ui.Modifier.size(24.dp)
+            )
+        }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -93,6 +94,7 @@ import com.wongyuheng.movielistapplication.ui.theme.AppThemeLightGrey
 import com.wongyuheng.movielistapplication.ui.theme.AppThemeWhite
 import com.wongyuheng.movielistapplication.ui.theme.MovieListApplicationTheme
 import com.wongyuheng.movielistapplication.utils.AuthUtils
+import com.wongyuheng.movielistapplication.utils.StarRating
 import com.wongyuheng.movielistapplication.utils.TriangleShape
 import com.wongyuheng.movielistapplication.utils.UserPreferences
 import com.wongyuheng.movielistapplication.utils.Utils
@@ -616,12 +618,21 @@ fun MovieButton(imageUrl: String, onClickDetail: () -> Unit){
             .width(180.dp) // Set width for button
             .height(220.dp) // Set height for button
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(model = imageUrl),
-            contentDescription = "Movie Image",
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-        )
+                .fillMaxSize(),
+            shape = RoundedCornerShape(16.dp), // Adjust corner radius as needed
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 8.dp
+            ),
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = imageUrl),
+                contentDescription = "Movie Image",
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+        }
     }
 }
 
@@ -703,16 +714,34 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
                                 .size(300.dp)
-                                .padding(bottom = 10.dp)//, start = LocalConfiguration.current.screenWidthDp.dp / 10)
+                                .padding(bottom = 10.dp)
+                                .clip(RoundedCornerShape(16.dp))
                         )
                     }
                     Spacer(modifier = Modifier.height(10.dp)) // Add space
                     // Movie Rating
-                    Column (modifier = Modifier.padding(start = 10.dp)) {
-                        Text(
-                            text = "Rating: ${movieDetail?.Ratings ?: "N/A"}",
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                    Column (modifier = Modifier.padding(15.dp)) {
+                        Row {
+                            StarRating(rating = movieDetail?.imdbRating?.toFloat() ?: 0f)
+                            Spacer(modifier = Modifier.padding(5.dp))
+                            Text(
+                                text = "${movieDetail?.imdbRating ?: "0"} / 10",
+                                fontSize = 20.sp,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold,
+                                color = AppThemeBlue,
+                                letterSpacing = 0.3.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.padding(20.dp))
+                            Text(
+                                text = "${movieDetail?.imdbVotes ?: "N/A"} Ratings",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Light,
+                                color = AppThemeGrey,
+                                fontSize = 20.sp,
+                                letterSpacing = 0.3.sp
+                            )
+                            )
+                        }
                         Spacer(modifier = Modifier.height(10.dp)) // Add space
                         // Movie Title
                         Text(
@@ -868,4 +897,10 @@ fun MovieDetailsScreenPreview() {
         val mockViewModel = MovieViewModel(null)
         MovieDetailsScreen(mockNavController, mockViewModel)
     }
+}
+
+@Preview
+@Composable
+fun PreviewStarRating() {
+    StarRating(rating = 7.5f) // Preview with a rating of 7.5
 }
