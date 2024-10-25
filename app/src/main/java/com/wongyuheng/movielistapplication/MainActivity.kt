@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +64,8 @@ import com.wongyuheng.movielistapplication.data.MovieDatabase
 import com.wongyuheng.movielistapplication.data.MovieRepository
 import com.wongyuheng.movielistapplication.data.MovieViewModel
 import com.wongyuheng.movielistapplication.ui.theme.MovieListApplicationTheme
+import com.wongyuheng.movielistapplication.utils.AuthUtils
+import com.wongyuheng.movielistapplication.utils.UserPreferences
 import com.wongyuheng.movielistapplication.utils.Utils
 import com.wongyuheng.movielistapplication.utils.Utils.isValidSearchQuery
 import kotlinx.coroutines.CoroutineScope
@@ -86,18 +89,26 @@ class MainActivity : ComponentActivity() {
         val repository = MovieRepository(movieDao)
         movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository))[MovieViewModel::class.java]
         FirebaseApp.initializeApp(this)
+        // Initialize UserPreferences
+        UserPreferences.init(applicationContext)
         setContent {
             MovieListApplicationTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Check if user is logged in
+                    val startDestination = if (UserPreferences.isLoggedIn()) {
+                        Screen.MovieListScreen.route // Navigate to MovieListScreen if logged in
+                    } else {
+                        Screen.MainScreen.route // Navigate to MainScreen (Login) if not logged in
+                    }
+
                     // Set up the NavHostController
                     val navController = rememberNavController()
-                    // NavHost: This is where we define the different routes
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.MainScreen.route // Start with the Login screen
+                        startDestination = startDestination
                     ) {
                         composable(Screen.MainScreen.route) {
                             MainPage(
@@ -175,13 +186,16 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
     var errorMessage by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
-
+    BackHandler {
+        //Override back button
+        navController.navigate(Screen.MainScreen.route)
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Screen.MainScreen.route) }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -234,9 +248,31 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
+                                    // Store credentials securely after successful login
+                                    val sharedPreferences = AuthUtils.createEncryptedPrefs(context)
+                                    AuthUtils.storeCredentials(sharedPreferences, email, password)
+                                    UserPreferences.setLoggedIn(true)
                                     onLoginSuccess()
                                 } else {
-                                    errorMessage = "Login failed: ${task.exception?.message}"
+                                    // Attempt offline login if offline
+                                    if (!AuthUtils.isNetworkAvailable(context)) {
+                                        val sharedPreferences =
+                                            AuthUtils.createEncryptedPrefs(context)
+                                        if (AuthUtils.validateOfflineLogin(
+                                                sharedPreferences,
+                                                email,
+                                                password
+                                            )
+                                        ) {
+                                            // Allow access to the app
+                                            onLoginSuccess()
+                                        } else {
+                                            // Inform user of invalid credentials
+                                            errorMessage =
+                                                "Login failed: ${task.exception?.message}"
+                                        }
+                                    }
+
                                 }
                             }
                     }
@@ -321,6 +357,9 @@ fun SignUpScreen(navController: NavController) {
                         auth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
+                                    // Store credentials
+                                    val sharedPreferences = AuthUtils.createEncryptedPrefs(context)
+                                    AuthUtils.storeCredentials(sharedPreferences, email, password)
                                     navController.navigate(Screen.LoginScreen.route)
                                     Toast.makeText(context, "Sign up successful", Toast.LENGTH_LONG).show()
                                 } else {
@@ -345,18 +384,18 @@ fun MovieListScreen(
 ) {
     // State for showing the logout confirmation dialog
     var showDialog by remember { mutableStateOf(false) }
+    BackHandler {
+        //Override back button to handle logout
+        showDialog = true
+    }
 
     // Function to handle logout
     fun logout() {
         val auth = FirebaseAuth.getInstance()
         auth.signOut()
-
-        // Clear the user's login state in DataStore
-        //val userPreferences = UserPreferences(context)
-        //userPreferences.setLoggedIn(false)
-
+        UserPreferences.clearLoginState()
         // After logout, navigate back to the login screen
-        navController.popBackStack()
+        navController.navigate(Screen.MainScreen.route)
     }
     var searchQuery by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -487,6 +526,10 @@ fun MovieButton(imageUrl: String, onClickDetail: () -> Unit){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewModel) {
+    BackHandler {
+        //Override back button
+        navController.navigate(Screen.MovieListScreen.route)
+    }
     // Collect the state from the ViewModel
     val movieDetail by movieViewModel.movieDetail.collectAsState()
     val movieID by movieViewModel.movieId.collectAsState()
@@ -501,7 +544,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Screen.MovieListScreen.route) }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back"
