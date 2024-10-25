@@ -282,7 +282,7 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 TextField(
                     value = email,
                     onValueChange = { newText  ->
-                        if(Utils.preventSpaces(newText )) {
+                        if(Utils.preventSpaces(newText ) && Utils.preventNewline(newText)) {
                             email = newText
                         }
                     },
@@ -294,7 +294,11 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 Spacer(modifier = Modifier.height(10.dp)) // Add space
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = { newText ->
+                        if (Utils.preventNewline(newText)) {
+                            password = newText
+                        }
+                    },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier
@@ -303,7 +307,8 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(40.dp)) // Add space
                 if (errorMessage.isNotEmpty()) {
-                    Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    Text(modifier = Modifier.padding(horizontal = 20.dp), text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(10.dp)) // Add space
                 }
 
                 Button(onClick = {
@@ -407,7 +412,7 @@ fun SignUpScreen(navController: NavController) {
                 TextField(
                     value = email,
                     onValueChange = { newText  ->
-                                    if(Utils.preventSpaces(newText )) {
+                        if(Utils.preventSpaces(newText ) && Utils.preventNewline(newText)) {
                                         email = newText
                                     }
                     },
@@ -419,7 +424,11 @@ fun SignUpScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(10.dp)) // Add space
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = { newText ->
+                        if (Utils.preventNewline(newText)) {
+                            password = newText
+                        }
+                    },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier
@@ -428,7 +437,8 @@ fun SignUpScreen(navController: NavController) {
                 )
 
                 if (errorMessage.isNotEmpty()) {
-                    Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    Text(modifier = Modifier.padding(horizontal = 20.dp), text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(10.dp)) // Add space
                 }
                 Spacer(modifier = Modifier.height(40.dp)) // Add space
                 Button(onClick = {
