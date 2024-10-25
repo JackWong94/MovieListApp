@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18486657866",
+    "project_id": "wongyuheng-movie-list-app",
+    "storage_bucket": "wongyuheng-movie-list-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18486657866:android:6bf26cc9ecb94fb2ecf7b3",
+        "android_client_info": {
+          "package_name": "com.wongyuheng.movielistapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3IibhjPOYsbYce_mE4e8VPQOCvXF8-K4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

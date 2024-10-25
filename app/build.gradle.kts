@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -51,8 +52,11 @@ android {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-analytics")
     // Room dependencies
     implementation("androidx.room:room-runtime:2.5.0")
+    implementation(libs.firebase.auth.ktx)
     kapt("androidx.room:room-compiler:2.5.0")
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

@@ -3,6 +3,7 @@ package com.wongyuheng.movielistapplication
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -42,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,6 +55,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.wongyuheng.movielistapplication.data.MovieDatabase
 import com.wongyuheng.movielistapplication.data.MovieRepository
 import com.wongyuheng.movielistapplication.data.MovieViewModel
@@ -74,7 +78,7 @@ class MainActivity : ComponentActivity() {
         val movieDao = database.movieDao()
         val repository = MovieRepository(movieDao)
         movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository)).get(MovieViewModel::class.java)
-
+        FirebaseApp.initializeApp(this)
         setContent {
             MovieListApplicationTheme {
                 Surface(
@@ -157,6 +161,8 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -205,11 +211,25 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 }
 
                 Button(onClick = {
+                    if (username.isEmpty() || password.isEmpty()) {
+                        // Show an error message to the user
+                        Toast.makeText(context, "Username and password cannot be empty", Toast.LENGTH_SHORT).show()
+                    } else {
+                        auth.signInWithEmailAndPassword(username, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    onLoginSuccess()
+                                } else {
+                                    errorMessage = "Login failed: ${task.exception?.message}"
+                                }
+                            }
+                    }
+                    /* HARDCODED USERNAME AND PASSWORD
                     if (!(username == "VVVBB" && password == "@bcd1234")) {
                         onLoginSuccess()
                     } else {
                         errorMessage = "Invalid credentials, please try again."
-                    }
+                    }*/
                 }) {
                     Text(text = "Log in")
                 }
