@@ -61,11 +61,13 @@ import com.wongyuheng.movielistapplication.data.MovieDatabase
 import com.wongyuheng.movielistapplication.data.MovieRepository
 import com.wongyuheng.movielistapplication.data.MovieViewModel
 import com.wongyuheng.movielistapplication.ui.theme.MovieListApplicationTheme
+import com.wongyuheng.movielistapplication.utils.Utils
 import com.wongyuheng.movielistapplication.utils.Utils.isValidSearchQuery
 
 sealed class Screen(val route: String) {
     data object MainScreen : Screen("main_page")
     data object LoginScreen : Screen("login")
+    data object SignUpScreen : Screen("signup")
     data object MovieListScreen : Screen("movie_list")
     data object MovieDetailsScreen : Screen("movie_details/{movieId}")
 }
@@ -96,6 +98,9 @@ class MainActivity : ComponentActivity() {
                             MainPage(
                                 onClickLogin = {
                                     navController.navigate(Screen.LoginScreen.route)
+                                },
+                                onClickSignup = {
+                                    navController.navigate(Screen.SignUpScreen.route)
                                 }
                             )
                         }
@@ -104,7 +109,9 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(Screen.MovieListScreen.route)
                             }
                         }
-
+                        composable(Screen.SignUpScreen.route) {
+                            SignUpScreen(navController = navController)
+                        }
                         composable(Screen.MovieListScreen.route) {
                             MovieListScreen(
                                 navController = navController,
@@ -126,7 +133,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainPage(onClickLogin: () -> Unit, modifier: Modifier = Modifier) {
+fun MainPage(onClickLogin: () -> Unit, onClickSignup: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize(), // Fill the available space
@@ -149,7 +156,7 @@ fun MainPage(onClickLogin: () -> Unit, modifier: Modifier = Modifier) {
             Text(text = "Log in")
         }
         Spacer(modifier = Modifier.height(8.dp)) // Add space between buttons
-        Button(onClick = { /* TODO: Handle Sign up */ }) {
+        Button(onClick = { onClickSignup() }) {
             Text(text = "Sign up")
         }
     }
@@ -158,7 +165,7 @@ fun MainPage(onClickLogin: () -> Unit, modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
@@ -167,7 +174,7 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Movie Details") },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -192,8 +199,12 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 )
 
                 TextField(
-                    value = username,
-                    onValueChange = { username = it },
+                    value = email,
+                    onValueChange = { newText  ->
+                        if(Utils.preventSpaces(newText )) {
+                            email = newText
+                        }
+                    },
                     label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -211,11 +222,11 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 }
 
                 Button(onClick = {
-                    if (username.isEmpty() || password.isEmpty()) {
+                    if (email.isEmpty() || password.isEmpty()) {
                         // Show an error message to the user
-                        Toast.makeText(context, "Username and password cannot be empty", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Email and password cannot be empty", Toast.LENGTH_SHORT).show()
                     } else {
-                        auth.signInWithEmailAndPassword(username, password)
+                        auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     onLoginSuccess()
@@ -236,14 +247,89 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Button(onClick = { /* Handle Sign up */ }) {
+                Button(onClick = { navController.navigate(Screen.SignUpScreen.route) }) {
                     Text(text = "Sign up")
                 }
             }
         }
     )
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SignUpScreen(navController: NavController) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Sign Up") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        },
+        content = { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TextField(
+                    value = email,
+                    onValueChange = { newText  ->
+                                    if(Utils.preventSpaces(newText )) {
+                                        email = newText
+                                    }
+                    },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (errorMessage.isNotEmpty()) {
+                    Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                }
+
+                Button(onClick = {
+                    if (email.isEmpty() || password.isEmpty()) {
+                        // Show an error message to the user
+                        Toast.makeText(context, "Email and password cannot be empty", Toast.LENGTH_SHORT).show()
+                    } else {
+                        auth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    navController.navigate(Screen.LoginScreen.route)
+                                    Toast.makeText(context, "Sign up successful", Toast.LENGTH_LONG).show()
+                                } else {
+                                    errorMessage = "Sign up failed: ${task.exception?.message}"
+                                }
+                            }
+                    }
+                    }) {
+                    Text(text = "Sign Up")
+                }
+            }
+        }
+    )
+}
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -441,7 +527,10 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
 @Composable
 fun MainPagePreview() {
     MovieListApplicationTheme {
-        MainPage(onClickLogin = { /* No action needed for preview */ })
+        MainPage(
+            onClickLogin = { /* No action needed for preview */ },
+            onClickSignup = { /* No action needed for preview */}
+        )
     }
 }
 @Preview(showBackground = true)
