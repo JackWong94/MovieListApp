@@ -4,6 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.util.Base64
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import java.security.MessageDigest
@@ -11,16 +17,21 @@ import java.security.MessageDigest
 object Utils {
     fun isValidSearchQuery(query: String): Boolean {
         val regex = "^[a-zA-Z0-9\\s]*$".toRegex()
-        return query.isNotEmpty() && regex.matches(query)
+        return query.isNotEmpty() && regex.matches(query) && query.trim() != "\n"
     }
     fun preventSpaces(query: String): Boolean {
         // Invalid if it contains spaces or tabs
         return !(query.contains(" ") || query.contains('\t'))
     }
+
+    fun preventNewline(query: String): Boolean {
+        // Invalid if it contains spaces or tabs
+        return !(query.contains('\n'))
+    }
 }
 
 object AuthUtils {
-
+    private lateinit var sharedPreferences: SharedPreferences
     // Create an instance of EncryptedSharedPreferences
     fun createEncryptedPrefs(context: Context): SharedPreferences {
         val masterKeyAlias = MasterKey.Builder(context)
@@ -90,5 +101,22 @@ object UserPreferences {
     // Clear the login state
     fun clearLoginState() {
         sharedPreferences.edit().remove(LOGGED_IN_KEY).apply()
+    }
+}
+
+class TriangleShape(private val triangleHeight: Float, private val triangleBase: Float) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        val path = Path().apply {
+            // Bottom left (0, size.height)
+            moveTo(0f, size.height) // Start at the bottom left corner
+            lineTo(0f, size.height - triangleHeight) // Move to the top left (side A)
+            lineTo(triangleBase, size.height) // Move to the bottom right (side B)
+            close() // Close the path to form a triangle
+        }
+        return Outline.Generic(path)
     }
 }

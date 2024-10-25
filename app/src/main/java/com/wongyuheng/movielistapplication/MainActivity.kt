@@ -1,14 +1,20 @@
 package com.wongyuheng.movielistapplication
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -18,9 +24,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,6 +37,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +48,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,12 +60,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -63,8 +87,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.wongyuheng.movielistapplication.data.MovieDatabase
 import com.wongyuheng.movielistapplication.data.MovieRepository
 import com.wongyuheng.movielistapplication.data.MovieViewModel
+import com.wongyuheng.movielistapplication.ui.theme.AppThemeBlue
+import com.wongyuheng.movielistapplication.ui.theme.AppThemeGrey
+import com.wongyuheng.movielistapplication.ui.theme.AppThemeLightGrey
+import com.wongyuheng.movielistapplication.ui.theme.AppThemeWhite
 import com.wongyuheng.movielistapplication.ui.theme.MovieListApplicationTheme
 import com.wongyuheng.movielistapplication.utils.AuthUtils
+import com.wongyuheng.movielistapplication.utils.TriangleShape
 import com.wongyuheng.movielistapplication.utils.UserPreferences
 import com.wongyuheng.movielistapplication.utils.Utils
 import com.wongyuheng.movielistapplication.utils.Utils.isValidSearchQuery
@@ -81,6 +110,7 @@ sealed class Screen(val route: String) {
 }
 class MainActivity : ComponentActivity() {
     private lateinit var movieViewModel: MovieViewModel
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Initialize the database
@@ -148,6 +178,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainPage(onClickLogin: () -> Unit, onClickSignup: () -> Unit, modifier: Modifier = Modifier) {
     Column(
@@ -166,13 +197,34 @@ fun MainPage(onClickLogin: () -> Unit, onClickSignup: () -> Unit, modifier: Modi
         )
         Text(
             text = "Access more with an account",
-            modifier = Modifier.padding(bottom = 16.dp) // Add space below the Text
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = AppThemeBlue,
+            fontSize = 30.sp,
+            fontWeight = FontWeight.W900,
+            textAlign = TextAlign.Center, // Center-aligns the text
+            style = androidx.compose.ui.text.TextStyle(
+                letterSpacing = 1.sp, // Correctly using sp for letter spacing
+                lineHeight = 38.sp // Correctly using sp for line height
+            )
         )
-        Button(onClick = { onClickLogin() }) {
+        Spacer(modifier = Modifier.height(40.dp)) // Add space
+        Button(onClick = { onClickLogin() },
+            colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
+            shape = RoundedCornerShape(12.dp), // Set rounded corners
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp),
+            ) {
             Text(text = "Log in")
         }
-        Spacer(modifier = Modifier.height(8.dp)) // Add space between buttons
-        Button(onClick = { onClickSignup() }) {
+        Spacer(modifier = Modifier.height(15.dp)) // Add space
+        Button(onClick = { onClickSignup() },
+            colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
+            shape = RoundedCornerShape(12.dp), // Set rounded corners
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp),
+        ) {
             Text(text = "Sign up")
         }
     }
@@ -213,10 +265,18 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Access more with an account",
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    text = "Welcome back !",
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = AppThemeBlue,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.W900,
+                    textAlign = TextAlign.Center, // Center-aligns the text
+                    style = androidx.compose.ui.text.TextStyle(
+                        letterSpacing = 1.sp, // Correctly using sp for letter spacing
+                        lineHeight = 38.sp // Correctly using sp for line height
+                    )
                 )
-
+                Spacer(modifier = Modifier.height(40.dp)) // Add space
                 TextField(
                     value = email,
                     onValueChange = { newText  ->
@@ -225,17 +285,21 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                         }
                     },
                     label = { Text("Username") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
                 )
-
+                Spacer(modifier = Modifier.height(10.dp)) // Add space
                 TextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
                 )
-
+                Spacer(modifier = Modifier.height(40.dp)) // Add space
                 if (errorMessage.isNotEmpty()) {
                     Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
                 }
@@ -282,13 +346,25 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                     } else {
                         errorMessage = "Invalid credentials, please try again."
                     }*/
-                }) {
+                },
+                    colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
+                    shape = RoundedCornerShape(12.dp), // Set rounded corners
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp),
+                ) {
                     Text(text = "Log in")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Button(onClick = { navController.navigate(Screen.SignUpScreen.route) }) {
+                Button(onClick = { navController.navigate(Screen.SignUpScreen.route) },
+                    colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
+                    shape = RoundedCornerShape(12.dp), // Set rounded corners
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp),
+                ) {
                     Text(text = "Sign up")
                 }
             }
@@ -334,21 +410,25 @@ fun SignUpScreen(navController: NavController) {
                                     }
                     },
                     label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
                 )
-
+                Spacer(modifier = Modifier.height(10.dp)) // Add space
                 TextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
                 )
 
                 if (errorMessage.isNotEmpty()) {
                     Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
                 }
-
+                Spacer(modifier = Modifier.height(40.dp)) // Add space
                 Button(onClick = {
                     if (email.isEmpty() || password.isEmpty()) {
                         // Show an error message to the user
@@ -367,7 +447,13 @@ fun SignUpScreen(navController: NavController) {
                                 }
                             }
                     }
-                    }) {
+                    },
+                    colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
+                    shape = RoundedCornerShape(12.dp), // Set rounded corners
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp),
+                ) {
                     Text(text = "Sign Up")
                 }
             }
@@ -460,15 +546,29 @@ fun MovieListScreen(
                 TextField(
                     value = searchQuery,
                     onValueChange = {
-                        searchQuery = it
-                        if (isValidSearchQuery(it)) {
-                            movieViewModel.fetchMovies(it)
+                        if(Utils.preventNewline(it)) {
+                            searchQuery = it
+                        }
+                        if (isValidSearchQuery(searchQuery)) {
+                            movieViewModel.fetchMovies(searchQuery)
                         } else {
                             Log.e("MovieListApp", "Invalid search query: $it")
                         }
                     },
                     label = { Text("Search Movies") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
+                        .border(
+                            BorderStroke(2.dp, AppThemeBlue),
+                            shape = MaterialTheme.shapes.medium
+                        ) // Blue outline
+                        .background(Color.Transparent), // Transparent background
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent, // Background color
+                            focusedIndicatorColor = Color.Transparent, // Focused indicator color
+                            unfocusedIndicatorColor = Color.Transparent // Unfocused indicator color
+                        ),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Search
                     ),
@@ -509,15 +609,18 @@ fun MovieButton(imageUrl: String, onClickDetail: () -> Unit){
     // Button containing an image of the movie
     Button(
         onClick = { onClickDetail() },
+        colors = ButtonDefaults.buttonColors(Color.Transparent),
+        shape = RectangleShape,
         modifier = Modifier
             .padding(8.dp)
-            .width(120.dp) // Set width for button
-            .height(180.dp) // Set height for button
+            .width(180.dp) // Set width for button
+            .height(220.dp) // Set height for button
     ) {
         Image(
             painter = rememberAsyncImagePainter(model = imageUrl),
             contentDescription = "Movie Image",
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
         )
     }
 }
@@ -538,82 +641,193 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
         movieViewModel.fetchMovieDetails(movieID ?: "Movie Details") // Example movie ID
         Log.d("JACK", "Movie Detail: $movieDetail")
     }
-
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate(Screen.MovieListScreen.route) }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
+            topBar = {
+                TopAppBar(
+                    title = {},
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent,
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigate(Screen.MovieListScreen.route) }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    }
+                )
+            },
+            content = { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(LocalConfiguration.current.screenHeightDp.dp * 5 / 12)
+                    ) {
+                        // Background Image
+                        val defaultPoster =
+                            "https://dummyimage.com/600x800/000/fff.png&text=Background+Image" // Use a valid URL for testing
+                        val painter =
+                            rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster)
+
+                        Image(
+                            painter = painter,
+                            contentDescription = "Background Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .alpha(0.2f), // Set transparency as needed
+                            contentScale = ContentScale.Crop // Crop the image to fill
+                        )
+                        // White Background Box
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    TriangleShape(
+                                        triangleHeight = 500f,
+                                        triangleBase = 1100f
+                                    )
+                                ) // Triangle cutout shape
+                                .background(Color.White) // Set the background to white
+                        )
+                        Image(
+                            contentScale = ContentScale.Fit,
+                            painter = rememberAsyncImagePainter(
+                                model = movieDetail?.Poster ?: defaultPoster
+                            ),
+                            contentDescription = "Movie Poster",
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .size(300.dp)
+                                .padding(bottom = 10.dp)//, start = LocalConfiguration.current.screenWidthDp.dp / 10)
                         )
                     }
-                }
-            )
-        },
-        content = { paddingValues->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                // Movie Image
-                val defaultPoster = "https://dummyimage.com/300x450/000/fff.png&text=No+Poster"
-                Image(
-                    painter = rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster),
-                    contentDescription = "Movie Poster",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .padding(bottom = 16.dp)
-                )
+                    Spacer(modifier = Modifier.height(10.dp)) // Add space
+                    // Movie Rating
+                    Column (modifier = Modifier.padding(start = 10.dp)) {
+                        Text(
+                            text = "Rating: ${movieDetail?.Ratings ?: "N/A"}",
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(10.dp)) // Add space
+                        // Movie Title
+                        Text(
+                            text = "${movieDetail?.Title ?: "N/A"}",
+                            style = TextStyle(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 28.sp,
+                                color = AppThemeGrey,
+                                letterSpacing = 0.3.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
 
-                // Movie Rating
-                Text(
-                    text = "Rating: ${movieDetail?.Ratings ?: "N/A"}",
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                        // Movie Category
+                        Text(
+                            text = "Category: ${movieDetail?.Genre ?: "N/A"}",
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                color = AppThemeLightGrey,
+                                letterSpacing = 0.3.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp)) // Add space
+                        // Movie Plot Summary
+                        Text(
+                            text = "Plot Summary",
+                            style = TextStyle(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 19.sp,
+                                color = AppThemeGrey,
+                                letterSpacing = 0.3.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        // Movie Plot Summary
+                        Text(
+                            text = "${movieDetail?.Plot ?: "N/A"}",
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                color = AppThemeLightGrey,
+                                letterSpacing = 0.3.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        // Other Ratings (if any)
+                        Text(
+                            text = "Other Ratings",
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
 
-                // Movie Title
-                Text(
-                    text = "Title: ${movieDetail?.Title ?: "N/A"}",
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                // Movie Category
-                Text(
-                    text = "Category: ${movieDetail?.Genre ?: "N/A"}",
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                // Movie Plot Summary
-                Text(
-                    text = "Plot Summary: ${movieDetail?.Plot ?: "N/A"}",
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Other Ratings (if any)
-                Text(
-                    text = "Other Ratings",
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    movieDetail?.let {
-                        items(it.OtherRatingTypes) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            movieDetail?.let { detail ->
+                                items(detail.Ratings) { rating ->
+                                    val (source, value) = rating
+                                    // Display each rating in a Card or any other desired layout
+                                    Card(
+                                        modifier = Modifier.size(
+                                            250.dp,
+                                            80.dp
+                                        ),
+                                        elevation = CardDefaults.cardElevation(
+                                            defaultElevation = 8.dp
+                                        ),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = AppThemeWhite,
+                                        ),
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(8.dp)
+                                                .wrapContentHeight()
+                                                .background(AppThemeWhite)
+                                                .fillMaxWidth(),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = source,
+                                                modifier = Modifier
+                                                    .align(Alignment.Start)
+                                                    .padding(start = 8.dp, top = 8.dp),
+                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                    fontSize = 15.sp,
+                                                    color = AppThemeGrey,
+                                                    letterSpacing = 0.3.sp
+                                                )
+                                            )
+                                            Spacer(modifier = Modifier.height(5.dp)) // Add space
+                                            Text(
+                                                text = value,
+                                                modifier = Modifier
+                                                    .align(Alignment.End) // Aligns this text to the bottom end (bottom right)
+                                                    .padding(bottom = 8.dp, end = 8.dp),
+                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                    fontSize = 15.sp,
+                                                    color = AppThemeBlue,
+                                                    letterSpacing = 0.3.sp
+                                                ),
+                                                fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-    )
+        )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun MainPagePreview() {
