@@ -1,4 +1,4 @@
-package com.example.movielistapplication.data
+package com.wongyuheng.movielistapplication.data
 
 import androidx.room.Dao
 import androidx.room.Insert

@@ -1,4 +1,4 @@
-package com.example.movielistapplication.data
+package com.wongyuheng.movielistapplication.data
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf

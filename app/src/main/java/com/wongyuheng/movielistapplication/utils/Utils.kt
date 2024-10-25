@@ -1,4 +1,4 @@
-package com.example.movielistapplication.utils
+package com.wongyuheng.movielistapplication.utils
 
 object Utils {
     fun isValidSearchQuery(query: String): Boolean {

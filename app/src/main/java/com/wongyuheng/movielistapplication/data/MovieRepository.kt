@@ -1,4 +1,4 @@
-package com.example.movielistapplication.data
+package com.wongyuheng.movielistapplication.data
 class MovieRepository(private val movieDao: MovieDao) {
     fun addMovie(movie: Movie) {
         movieDao.insert(movie)

@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.movielistapplication"
+    namespace = "com.wongyuheng.movielistapplication"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.movielistapplication"
+        applicationId = "com.wongyuheng.movielistapplication"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

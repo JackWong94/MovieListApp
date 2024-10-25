@@ -1,4 +1,4 @@
-package com.example.movielistapplication.data
+package com.wongyuheng.movielistapplication.data
 
 import android.content.Context
 import androidx.room.Database

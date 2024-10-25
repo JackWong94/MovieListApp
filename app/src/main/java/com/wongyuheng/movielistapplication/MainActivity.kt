@@ -1,4 +1,4 @@
-package com.example.movielistapplication
+package com.wongyuheng.movielistapplication
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -53,11 +53,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.movielistapplication.data.MovieDatabase
-import com.example.movielistapplication.data.MovieRepository
-import com.example.movielistapplication.data.MovieViewModel
-import com.example.movielistapplication.ui.theme.MovieListApplicationTheme
-import com.example.movielistapplication.utils.Utils.isValidSearchQuery
+import com.wongyuheng.movielistapplication.data.MovieDatabase
+import com.wongyuheng.movielistapplication.data.MovieRepository
+import com.wongyuheng.movielistapplication.data.MovieViewModel
+import com.wongyuheng.movielistapplication.ui.theme.MovieListApplicationTheme
+import com.wongyuheng.movielistapplication.utils.Utils.isValidSearchQuery
 
 sealed class Screen(val route: String) {
     data object MainScreen : Screen("main_page")

@@ -1,4 +1,4 @@
-package com.example.movielistapplication.data
+package com.wongyuheng.movielistapplication.data
 
 data class MovieDetail(
     val Title: String = "Title",
