@@ -24,6 +24,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -63,6 +65,9 @@ import com.wongyuheng.movielistapplication.data.MovieViewModel
 import com.wongyuheng.movielistapplication.ui.theme.MovieListApplicationTheme
 import com.wongyuheng.movielistapplication.utils.Utils
 import com.wongyuheng.movielistapplication.utils.Utils.isValidSearchQuery
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String) {
     data object MainScreen : Screen("main_page")
@@ -79,7 +84,7 @@ class MainActivity : ComponentActivity() {
         val database = MovieDatabase.getDatabase(application)
         val movieDao = database.movieDao()
         val repository = MovieRepository(movieDao)
-        movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository)).get(MovieViewModel::class.java)
+        movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository))[MovieViewModel::class.java]
         FirebaseApp.initializeApp(this)
         setContent {
             MovieListApplicationTheme {
@@ -338,6 +343,21 @@ fun MovieListScreen(
     onClickDetail: () -> Unit,
     movieViewModel: MovieViewModel
 ) {
+    // State for showing the logout confirmation dialog
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Function to handle logout
+    fun logout() {
+        val auth = FirebaseAuth.getInstance()
+        auth.signOut()
+
+        // Clear the user's login state in DataStore
+        //val userPreferences = UserPreferences(context)
+        //userPreferences.setLoggedIn(false)
+
+        // After logout, navigate back to the login screen
+        navController.popBackStack()
+    }
     var searchQuery by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         movieViewModel.fetchMovies("Movie") // You can set an initial query
@@ -354,10 +374,38 @@ fun MovieListScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back"
+                    IconButton(onClick = { showDialog = true }) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                    }
+                    // Logout confirmation dialog
+                    if (showDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDialog = false },
+                            title = { Text("Logout Confirmation") },
+                            text = { Text("Are you sure you want to log out?") },
+                            dismissButton = {
+                                Button(
+                                    onClick = {
+                                        // Launch logout in a coroutine scope
+                                        // Use CoroutineScope to call the suspend function
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            logout() // Call the logout function
+                                        }
+                                        showDialog = false // Close the dialog
+                                    }
+                                ) {
+                                    Text("Yes")
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog = false // Close the dialog
+                                    }
+                                ) {
+                                    Text("No")
+                                }
+                            }
                         )
                     }
                 }
