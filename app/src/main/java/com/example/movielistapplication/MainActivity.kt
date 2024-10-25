@@ -57,6 +57,7 @@ import com.example.movielistapplication.data.MovieDatabase
 import com.example.movielistapplication.data.MovieRepository
 import com.example.movielistapplication.data.MovieViewModel
 import com.example.movielistapplication.ui.theme.MovieListApplicationTheme
+import com.example.movielistapplication.utils.Utils.isValidSearchQuery
 
 sealed class Screen(val route: String) {
     data object MainScreen : Screen("main_page")
@@ -267,7 +268,11 @@ fun MovieListScreen(
                     value = searchQuery,
                     onValueChange = {
                         searchQuery = it
-                        movieViewModel.fetchMovies(it)
+                        if (isValidSearchQuery(it)) {
+                            movieViewModel.fetchMovies(it)
+                        } else {
+                            Log.e("MovieListApp", "Invalid search query: $it")
+                        }
                     },
                     label = { Text("Search Movies") },
                     modifier = Modifier.fillMaxWidth(),
@@ -276,7 +281,11 @@ fun MovieListScreen(
                     ),
                     keyboardActions = KeyboardActions(
                         onSearch = {
-                            movieViewModel.fetchMovies(searchQuery)
+                            if (isValidSearchQuery(searchQuery)) {
+                                movieViewModel.fetchMovies(searchQuery)
+                            } else {
+                                Log.e("MovieListApp", "Invalid search query: $searchQuery")
+                            }
                         }
                     )
                 )
@@ -423,13 +432,13 @@ fun LoginScreenPreview() {
         LoginScreen(mockNavController) { /* No action needed for preview */ }
     }
 }
-/*
+
 @Preview(showBackground = true)
 @Composable
 fun MovieListScreenPreview() {
     MovieListApplicationTheme {
         val mockNavController = rememberNavController()
-        val mockViewModel = MovieViewModel(repository)
+        val mockViewModel = MovieViewModel(null)
         MovieListScreen(
             mockNavController,
             onClickDetail = { /* No action needed for preview */ },
@@ -442,8 +451,7 @@ fun MovieListScreenPreview() {
 fun MovieDetailsScreenPreview() {
     MovieListApplicationTheme {
         val mockNavController = rememberNavController()
-        val mockViewModel = MovieViewModel(repository)
+        val mockViewModel = MovieViewModel(null)
         MovieDetailsScreen(mockNavController, mockViewModel)
     }
 }
-*/
