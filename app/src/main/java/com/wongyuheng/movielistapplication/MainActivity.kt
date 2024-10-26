@@ -220,7 +220,7 @@ fun MainPage(onClickLogin: () -> Unit, onClickSignup: () -> Unit, modifier: Modi
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 40.dp),
-            ) {
+        ) {
             Text(text = "Log in")
         }
         Spacer(modifier = Modifier.height(15.dp)) // Add space
@@ -327,8 +327,8 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         // Store credentials securely after successful login
-                                            // Only store if they are different
-                                            AuthUtils.storeCredentials(email, password)
+                                        // Only store if they are different
+                                        AuthUtils.storeCredentials(email, password)
                                         UserPreferences.setLoggedIn(true)
                                         onLoginSuccess()
                                     } else {
@@ -419,8 +419,8 @@ fun SignUpScreen(navController: NavController) {
                     value = email,
                     onValueChange = { newText  ->
                         if(Utils.preventSpaces(newText ) && Utils.preventNewline(newText)) {
-                                        email = newText
-                                    }
+                            email = newText
+                        }
                     },
                     label = { Text("Email") },
                     modifier = Modifier
@@ -464,7 +464,7 @@ fun SignUpScreen(navController: NavController) {
                                 }
                             }
                     }
-                    },
+                },
                     colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
                     shape = RoundedCornerShape(12.dp), // Set rounded corners
                     modifier = Modifier
@@ -581,13 +581,13 @@ fun MovieListScreen(
                             shape = MaterialTheme.shapes.medium
                         ) // Blue outline
                         .background(Color.Transparent), // Transparent background
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent, // Background color
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent, // Focused indicator color
-                            unfocusedIndicatorColor = Color.Transparent, // Unfocused indicator color
-                        ),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent, // Background color
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent, // Focused indicator color
+                        unfocusedIndicatorColor = Color.Transparent, // Unfocused indicator color
+                    ),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Search
                     ),
@@ -612,9 +612,9 @@ fun MovieListScreen(
                 ) {
                     items(movieList.size) { index ->
                         MovieButton(imageUrl = movieList[index].Poster, onClickDetail  = {
-                                movieViewModel.setMovieId(movieList[index].imdbID)
-                                onClickDetail()
-                            }
+                            movieViewModel.setMovieId(movieList[index].imdbID)
+                            onClickDetail()
+                        }
                         )
                     }
                 }
@@ -670,199 +670,198 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
         Log.d("JACK", "Movie Detail: $movieDetail")
     }
     Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {},
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Transparent,
-                    ),
-                    navigationIcon = {
-                        IconButton(onClick = { navController.navigate(Screen.MovieListScreen.route) }) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
+        topBar = {
+            TopAppBar(
+                title = {},
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent,
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigate(Screen.MovieListScreen.route) }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
-                )
-            },
-            content = {
-                Column(
+                }
+            )
+        },
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Transparent)
+                        .height(LocalConfiguration.current.screenHeightDp.dp * 5 / 12)
                 ) {
+                    // Background Image
+                    val defaultPoster =
+                        "https://dummyimage.com/600x800/000/fff.png&text=Background+Image" // Use a valid URL for testing
+                    val painter =
+                        rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster)
+
+                    Image(
+                        painter = painter,
+                        contentDescription = "Background Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .alpha(0.2f), // Set transparency as needed
+                        contentScale = ContentScale.Crop // Crop the image to fill
+                    )
+                    // White Background Box
                     Box(
                         modifier = Modifier
-                            .height(LocalConfiguration.current.screenHeightDp.dp * 5 / 12)
-                    ) {
-                        // Background Image
-                        val defaultPoster =
-                            "https://dummyimage.com/600x800/000/fff.png&text=Background+Image" // Use a valid URL for testing
-                        val painter =
-                            rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster)
-
-                        Image(
-                            painter = painter,
-                            contentDescription = "Background Image",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .alpha(0.2f), // Set transparency as needed
-                            contentScale = ContentScale.Crop // Crop the image to fill
+                            .fillMaxSize()
+                            .clip(
+                                TriangleShape(
+                                    triangleHeight = 500f,
+                                    triangleBase = 1100f
+                                )
+                            ) // Triangle cutout shape
+                            .background(Color.White) // Set the background to white
+                    )
+                    Image(
+                        contentScale = ContentScale.Fit,
+                        painter = rememberAsyncImagePainter(
+                            model = movieDetail?.Poster ?: defaultPoster
+                        ),
+                        contentDescription = "Movie Poster",
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .size(300.dp)
+                            .padding(bottom = 10.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp)) // Add space
+                // Movie Rating
+                Column (modifier = Modifier.padding(15.dp)) {
+                    Row {
+                        StarRating(rating = movieDetail?.imdbRating?.toFloat() ?: 0f)
+                        Spacer(modifier = Modifier.padding(5.dp))
+                        Text(
+                            text = "${movieDetail?.imdbRating ?: "0"} / 10",
+                            fontSize = 20.sp,
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold,
+                                color = AppThemeBlue,
+                                letterSpacing = 0.3.sp
+                            )
                         )
-                        // White Background Box
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(
-                                    TriangleShape(
-                                        triangleHeight = 500f,
-                                        triangleBase = 1100f
-                                    )
-                                ) // Triangle cutout shape
-                                .background(Color.White) // Set the background to white
-                        )
-                        Image(
-                            contentScale = ContentScale.Fit,
-                            painter = rememberAsyncImagePainter(
-                                model = movieDetail?.Poster ?: defaultPoster
-                            ),
-                            contentDescription = "Movie Poster",
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .size(300.dp)
-                                .padding(bottom = 10.dp)
-                                .clip(RoundedCornerShape(16.dp))
+                        Spacer(modifier = Modifier.padding(20.dp))
+                        Text(
+                            text = "${movieDetail?.imdbVotes ?: "N/A"} Ratings",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Light,
+                                color = AppThemeGrey,
+                                fontSize = 20.sp,
+                                letterSpacing = 0.3.sp
+                            )
                         )
                     }
                     Spacer(modifier = Modifier.height(10.dp)) // Add space
-                    // Movie Rating
-                    Column (modifier = Modifier.padding(15.dp)) {
-                        Row {
-                            StarRating(rating = movieDetail?.imdbRating?.toFloat() ?: 0f)
-                            Spacer(modifier = Modifier.padding(5.dp))
-                            Text(
-                                text = "${movieDetail?.imdbRating ?: "0"} / 10",
-                                fontSize = 20.sp,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold,
-                                color = AppThemeBlue,
-                                letterSpacing = 0.3.sp
-                                )
-                            )
-                            Spacer(modifier = Modifier.padding(20.dp))
-                            Text(
-                                text = "${movieDetail?.imdbVotes ?: "N/A"} Ratings",
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Light,
-                                color = AppThemeGrey,
-                                fontSize = 20.sp,
-                                letterSpacing = 0.3.sp
-                            )
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(10.dp)) // Add space
-                        // Movie Title
-                        Text(
-                            text = movieDetail?.Title ?: "N/A",
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 28.sp,
-                                color = AppThemeGrey,
-                                letterSpacing = 0.3.sp
-                            ),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                    // Movie Title
+                    Text(
+                        text = movieDetail?.Title ?: "N/A",
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 28.sp,
+                            color = AppThemeGrey,
+                            letterSpacing = 0.3.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
 
-                        // Movie Category
-                        Text(
-                            text = "Category: ${movieDetail?.Genre ?: "N/A"}",
-                            style = TextStyle(
-                                fontSize = 15.sp,
-                                color = AppThemeLightGrey,
-                                letterSpacing = 0.3.sp
-                            ),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Spacer(modifier = Modifier.height(20.dp)) // Add space
-                        // Movie Plot Summary
-                        Text(
-                            text = "Plot Summary",
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 19.sp,
-                                color = AppThemeGrey,
-                                letterSpacing = 0.3.sp
-                            ),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        // Movie Plot Summary
-                        Text(
-                            text = movieDetail?.Plot ?: "N/A",
-                            style = TextStyle(
-                                fontSize = 15.sp,
-                                color = AppThemeLightGrey,
-                                letterSpacing = 0.3.sp
-                            ),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        // Other Ratings (if any)
-                        Text(
-                            text = "Other Ratings",
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                    // Movie Category
+                    Text(
+                        text = "Category: ${movieDetail?.Genre ?: "N/A"}",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            color = AppThemeLightGrey,
+                            letterSpacing = 0.3.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp)) // Add space
+                    // Movie Plot Summary
+                    Text(
+                        text = "Plot Summary",
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 19.sp,
+                            color = AppThemeGrey,
+                            letterSpacing = 0.3.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    // Movie Plot Summary
+                    Text(
+                        text = movieDetail?.Plot ?: "N/A",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            color = AppThemeLightGrey,
+                            letterSpacing = 0.3.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    // Other Ratings (if any)
+                    Text(
+                        text = "Other Ratings",
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            movieDetail?.let { detail ->
-                                items(detail.Ratings) { rating ->
-                                    val (source, value) = rating
-                                    // Display each rating in a Card or any other desired layout
-                                    Card(
-                                        modifier = Modifier.size(
-                                            250.dp,
-                                            80.dp
-                                        ),
-                                        elevation = CardDefaults.cardElevation(
-                                            defaultElevation = 8.dp
-                                        ),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = AppThemeWhite,
-                                        ),
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        movieDetail?.let { detail ->
+                            items(detail.Ratings) { rating ->
+                                val (source, value) = rating
+                                // Display each rating in a Card or any other desired layout
+                                Card(
+                                    modifier = Modifier.size(
+                                        250.dp,
+                                        80.dp
+                                    ),
+                                    elevation = CardDefaults.cardElevation(
+                                        defaultElevation = 8.dp
+                                    ),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = AppThemeWhite,
+                                    ),
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .wrapContentHeight()
+                                            .background(AppThemeWhite)
+                                            .fillMaxWidth(),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Column(
+                                        Text(
+                                            text = source,
                                             modifier = Modifier
-                                                .padding(8.dp)
-                                                .wrapContentHeight()
-                                                .background(AppThemeWhite)
-                                                .fillMaxWidth(),
-                                            verticalArrangement = Arrangement.Center,
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Text(
-                                                text = source,
-                                                modifier = Modifier
-                                                    .align(Alignment.Start)
-                                                    .padding(start = 8.dp, top = 8.dp),
-                                                style = MaterialTheme.typography.bodySmall.copy(
-                                                    fontSize = 15.sp,
-                                                    color = AppThemeGrey,
-                                                    letterSpacing = 0.3.sp
-                                                )
+                                                .align(Alignment.Start)
+                                                .padding(start = 8.dp, top = 8.dp),
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                fontSize = 15.sp,
+                                                color = AppThemeGrey,
+                                                letterSpacing = 0.3.sp
                                             )
-                                            Spacer(modifier = Modifier.height(5.dp)) // Add space
-                                            Text(
-                                                text = value,
-                                                modifier = Modifier
-                                                    .align(Alignment.End) // Aligns this text to the bottom end (bottom right)
-                                                    .padding(bottom = 8.dp, end = 8.dp),
-                                                style = MaterialTheme.typography.bodyLarge.copy(
-                                                    fontSize = 15.sp,
-                                                    color = AppThemeBlue,
-                                                    letterSpacing = 0.3.sp
-                                                ),
-                                                fontWeight = FontWeight.Bold)
-                                        }
+                                        )
+                                        Spacer(modifier = Modifier.height(5.dp)) // Add space
+                                        Text(
+                                            text = value,
+                                            modifier = Modifier
+                                                .align(Alignment.End) // Aligns this text to the bottom end (bottom right)
+                                                .padding(bottom = 8.dp, end = 8.dp),
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                fontSize = 15.sp,
+                                                color = AppThemeBlue,
+                                                letterSpacing = 0.3.sp
+                                            ),
+                                            fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -870,7 +869,8 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     }
                 }
             }
-        )
+        }
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
