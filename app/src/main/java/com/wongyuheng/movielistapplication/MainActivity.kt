@@ -276,10 +276,10 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                     color = AppThemeBlue,
                     fontSize = 30.sp,
                     fontWeight = FontWeight.W900,
-                    textAlign = TextAlign.Center, // Center-aligns the text
+                    textAlign = TextAlign.Center,
                     style = TextStyle(
-                        letterSpacing = 1.sp, // Correctly using sp for letter spacing
-                        lineHeight = 38.sp // Correctly using sp for line height
+                        letterSpacing = 1.sp,
+                        lineHeight = 38.sp
                     )
                 )
                 Spacer(modifier = Modifier.height(40.dp)) // Add space
@@ -698,7 +698,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                 ) {
                     // Background Image
                     val defaultPoster =
-                        "https://dummyimage.com/600x800/000/fff.png&text=Background+Image" // Use a valid URL for testing
+                        R.drawable.no_internet_image
                     val painter =
                         rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster)
 
