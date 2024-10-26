@@ -318,47 +318,63 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                         // Show an error message to the user
                         Toast.makeText(context, "Email and password cannot be empty", Toast.LENGTH_SHORT).show()
                     } else {
-                        auth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    // Store credentials securely after successful login
-                                    val sharedPreferences = AuthUtils.createEncryptedPrefs(context)
-                                    AuthUtils.storeCredentials(sharedPreferences, email, password)
-                                    UserPreferences.setLoggedIn(true)
-                                    onLoginSuccess()
-                                } else {
-                                    // Attempt offline login if offline
-                                    if (!AuthUtils.isNetworkAvailable(context)) {
+                        // Check if the network is available before attempting authentication
+                        if (AuthUtils.isNetworkAvailable(context)) {
+                            // Network is available, proceed with Firebase Authentication
+                            auth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        // Store credentials securely after successful login
                                         val sharedPreferences =
                                             AuthUtils.createEncryptedPrefs(context)
-                                        if (AuthUtils.validateOfflineLogin(
+
+                                        // Check if the credentials already exist
+                                        val existingEmail =
+                                            sharedPreferences.getString("email", null)
+                                        val existingPassword =
+                                            sharedPreferences.getString("password", null)
+
+                                        if (existingEmail != email || existingPassword != password) {
+                                            // Only store if they are different
+                                            AuthUtils.storeCredentials(
                                                 sharedPreferences,
                                                 email,
                                                 password
                                             )
-                                        ) {
-                                            // Allow access to the app
-                                            onLoginSuccess()
-                                        } else {
-                                            // Inform user of invalid credentials
-                                            errorMessage =
-                                                "Login failed: ${task.exception?.message}"
                                         }
+
+                                        UserPreferences.setLoggedIn(true)
+                                        onLoginSuccess()
                                     } else {
                                         // Inform user of invalid credentials
-                                        errorMessage =
-                                            "Login failed: ${task.exception?.message}"
+                                        errorMessage = "Login failed: ${task.exception?.message}"
                                     }
-
                                 }
+                        } else {
+                            Toast.makeText(context, "No Internet Connection, Trying Offline Login", Toast.LENGTH_SHORT).show()
+                            // Network is not available, attempt offline login
+                            val sharedPreferences = AuthUtils.createEncryptedPrefs(context)
+                            if (AuthUtils.validateOfflineLogin(
+                                    sharedPreferences,
+                                    email,
+                                    password
+                                )
+                            ) {
+                                // Allow access to the app
+                                UserPreferences.setLoggedIn(true) // Ensure user is marked as logged in
+                                onLoginSuccess()
+                            } else {
+                                // Inform user of invalid credentials
+                                errorMessage = "Invalid credentials"
                             }
+                        }
+                        /* HARDCODED USERNAME AND PASSWORD
+                        if (!(username == "VVVBB" && password == "@bcd1234")) {
+                            onLoginSuccess()
+                        } else {
+                            errorMessage = "Invalid credentials, please try again."
+                        }*/
                     }
-                    /* HARDCODED USERNAME AND PASSWORD
-                    if (!(username == "VVVBB" && password == "@bcd1234")) {
-                        onLoginSuccess()
-                    } else {
-                        errorMessage = "Invalid credentials, please try again."
-                    }*/
                 },
                     colors = ButtonDefaults.buttonColors(AppThemeBlue), // Change to desired color
                     shape = RoundedCornerShape(12.dp), // Set rounded corners
