@@ -119,6 +119,8 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         // Initialize UserPreferences
         UserPreferences.init(applicationContext)
+        // Initialize AuthUtils with the application context
+        AuthUtils.init(applicationContext)
         // Initialize the database
         val database = MovieDatabase.getDatabase(application)
         val movieDao = database.movieDao()
@@ -325,24 +327,8 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         // Store credentials securely after successful login
-                                        val sharedPreferences =
-                                            AuthUtils.createEncryptedPrefs(context)
-
-                                        // Check if the credentials already exist
-                                        val existingEmail =
-                                            sharedPreferences.getString("email", null)
-                                        val existingPassword =
-                                            sharedPreferences.getString("password", null)
-
-                                        if (existingEmail != email || existingPassword != password) {
                                             // Only store if they are different
-                                            AuthUtils.storeCredentials(
-                                                sharedPreferences,
-                                                email,
-                                                password
-                                            )
-                                        }
-
+                                            AuthUtils.storeCredentials(email, password)
                                         UserPreferences.setLoggedIn(true)
                                         onLoginSuccess()
                                     } else {
@@ -353,9 +339,7 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                         } else {
                             Toast.makeText(context, "No Internet Connection, Trying Offline Login", Toast.LENGTH_SHORT).show()
                             // Network is not available, attempt offline login
-                            val sharedPreferences = AuthUtils.createEncryptedPrefs(context)
                             if (AuthUtils.validateOfflineLogin(
-                                    sharedPreferences,
                                     email,
                                     password
                                 )
@@ -472,8 +456,7 @@ fun SignUpScreen(navController: NavController) {
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     // Store credentials
-                                    val sharedPreferences = AuthUtils.createEncryptedPrefs(context)
-                                    AuthUtils.storeCredentials(sharedPreferences, email, password)
+                                    AuthUtils.storeCredentials(email, password)
                                     navController.navigate(Screen.LoginScreen.route)
                                     Toast.makeText(context, "Sign up successful", Toast.LENGTH_LONG).show()
                                 } else {

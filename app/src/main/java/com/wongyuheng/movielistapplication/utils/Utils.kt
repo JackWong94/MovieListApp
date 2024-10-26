@@ -38,17 +38,17 @@ object Utils {
 }
 
 object AuthUtils {
+    private const val PREF_NAME = "secure_prefs"
     private lateinit var sharedPreferences: SharedPreferences
-    // Create an instance of EncryptedSharedPreferences
-    fun createEncryptedPrefs(context: Context): SharedPreferences {
-        val masterKeyAlias = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
 
-        return EncryptedSharedPreferences.create(
+    // Initialize SharedPreferences
+    fun init(context: Context) {
+        sharedPreferences = EncryptedSharedPreferences.create(
             context,
-            "secure_prefs",
-            masterKeyAlias,
+            PREF_NAME,
+            MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build(),
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
@@ -62,18 +62,24 @@ object AuthUtils {
     }
 
     // Store email and hashed password
-    fun storeCredentials(sharedPreferences: SharedPreferences, email: String, password: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString("user_email", email)
-        editor.putString("user_password", hashPassword(password))
-        editor.apply()
+    fun storeCredentials(email: String, password: String) {
+        // Retrieve existing credentials
+        val existingEmail = sharedPreferences.getString("user_email", null)
+        val existingPassword = sharedPreferences.getString("user_password", null)
+
+        // Check if the credentials already exist and are the same
+        if (existingEmail != email || existingPassword != hashPassword(password)) {
+            val editor = sharedPreferences.edit()
+            editor.putString("user_email", email)
+            editor.putString("user_password", hashPassword(password))
+            editor.apply()
+        }
     }
 
     // Validate offline login
-    fun validateOfflineLogin(sharedPreferences: SharedPreferences, inputEmail: String, inputPassword: String): Boolean {
+    fun validateOfflineLogin(inputEmail: String, inputPassword: String): Boolean {
         val storedEmail = sharedPreferences.getString("user_email", null)
         val storedPassword = sharedPreferences.getString("user_password", null)
-
         return storedEmail == inputEmail && storedPassword == hashPassword(inputPassword)
     }
 
