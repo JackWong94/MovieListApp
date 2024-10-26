@@ -115,14 +115,16 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this)
+        // Initialize UserPreferences
+        UserPreferences.init(applicationContext)
         // Initialize the database
         val database = MovieDatabase.getDatabase(application)
         val movieDao = database.movieDao()
         val repository = MovieRepository(movieDao)
         movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository))[MovieViewModel::class.java]
-        FirebaseApp.initializeApp(this)
-        // Initialize UserPreferences
-        UserPreferences.init(applicationContext)
+
         setContent {
             MovieListApplicationTheme {
                 Surface(

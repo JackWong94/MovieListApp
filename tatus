@@ -1,0 +1,24 @@
+[1mdiff --git a/app/src/main/java/com/wongyuheng/movielistapplication/MainActivity.kt b/app/src/main/java/com/wongyuheng/movielistapplication/MainActivity.kt[m
+[1mindex e49a5f2..c517542 100644[m
+[1m--- a/app/src/main/java/com/wongyuheng/movielistapplication/MainActivity.kt[m
+[1m+++ b/app/src/main/java/com/wongyuheng/movielistapplication/MainActivity.kt[m
+[36m@@ -115,14 +115,16 @@[m [mclass MainActivity : ComponentActivity() {[m
+     @RequiresApi(Build.VERSION_CODES.O)[m
+     override fun onCreate(savedInstanceState: Bundle?) {[m
+         super.onCreate(savedInstanceState)[m
+[32m+[m[32m        // Initialize Firebase[m
+[32m+[m[32m        FirebaseApp.initializeApp(this)[m
+[32m+[m[32m        // Initialize UserPreferences[m
+[32m+[m[32m        UserPreferences.init(applicationContext)[m
+         // Initialize the database[m
+         val database = MovieDatabase.getDatabase(application)[m
+         val movieDao = database.movieDao()[m
+         val repository = MovieRepository(movieDao)[m
+         movieViewModel = ViewModelProvider(this, MovieViewModelFactory(repository))[MovieViewModel::class.java][m
+[31m-        FirebaseApp.initializeApp(this)[m
+[31m-        // Initialize UserPreferences[m
+[31m-        UserPreferences.init(applicationContext)[m
+[32m+[m
+         setContent {[m
+             MovieListApplicationTheme {[m
+                 Surface([m
