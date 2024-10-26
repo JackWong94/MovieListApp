@@ -204,7 +204,7 @@ fun MainPage(onClickLogin: () -> Unit, onClickSignup: () -> Unit, modifier: Modi
             fontSize = 30.sp,
             fontWeight = FontWeight.W900,
             textAlign = TextAlign.Center, // Center-aligns the text
-            style = androidx.compose.ui.text.TextStyle(
+            style = TextStyle(
                 letterSpacing = 1.sp, // Correctly using sp for letter spacing
                 lineHeight = 38.sp // Correctly using sp for line height
             )
@@ -273,7 +273,7 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                     fontSize = 30.sp,
                     fontWeight = FontWeight.W900,
                     textAlign = TextAlign.Center, // Center-aligns the text
-                    style = androidx.compose.ui.text.TextStyle(
+                    style = TextStyle(
                         letterSpacing = 1.sp, // Correctly using sp for letter spacing
                         lineHeight = 38.sp // Correctly using sp for line height
                     )
@@ -342,6 +342,10 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                                             errorMessage =
                                                 "Login failed: ${task.exception?.message}"
                                         }
+                                    } else {
+                                        // Inform user of invalid credentials
+                                        errorMessage =
+                                            "Login failed: ${task.exception?.message}"
                                     }
 
                                 }
@@ -576,10 +580,12 @@ fun MovieListScreen(
                             shape = MaterialTheme.shapes.medium
                         ) // Blue outline
                         .background(Color.Transparent), // Transparent background
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent, // Background color
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent, // Background color
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent, // Focused indicator color
-                            unfocusedIndicatorColor = Color.Transparent // Unfocused indicator color
+                            unfocusedIndicatorColor = Color.Transparent, // Unfocused indicator color
                         ),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Search
@@ -679,7 +685,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     }
                 )
             },
-            content = { paddingValues ->
+            content = {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -755,7 +761,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                         Spacer(modifier = Modifier.height(10.dp)) // Add space
                         // Movie Title
                         Text(
-                            text = "${movieDetail?.Title ?: "N/A"}",
+                            text = movieDetail?.Title ?: "N/A",
                             style = TextStyle(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 28.sp,
@@ -789,7 +795,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                         )
                         // Movie Plot Summary
                         Text(
-                            text = "${movieDetail?.Plot ?: "N/A"}",
+                            text = movieDetail?.Plot ?: "N/A",
                             style = TextStyle(
                                 fontSize = 15.sp,
                                 color = AppThemeLightGrey,
