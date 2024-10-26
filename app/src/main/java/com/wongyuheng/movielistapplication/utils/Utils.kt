@@ -55,7 +55,7 @@ object AuthUtils {
     }
 
     // Hash the password
-    fun hashPassword(password: String): String {
+    private fun hashPassword(password: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
         val hashedBytes = digest.digest(password.toByteArray())
         return Base64.encodeToString(hashedBytes, Base64.DEFAULT)
@@ -84,6 +84,7 @@ object AuthUtils {
     }
 
     // Check network availability
+    @Suppress("DEPRECATION")
     fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetworkInfo = connectivityManager.activeNetworkInfo

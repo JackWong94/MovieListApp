@@ -56,14 +56,14 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-analytics")
     // Room dependencies
-    implementation("androidx.room:room-runtime:2.5.0")
+    implementation("androidx.room:room-runtime:2.6.1")
     implementation(libs.firebase.auth.ktx)
-    kapt("androidx.room:room-compiler:2.5.0")
+    kapt("androidx.room:room-compiler:2.6.1")
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
-    implementation("io.coil-kt:coil-compose:2.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

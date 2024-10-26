@@ -11,7 +11,7 @@ class MovieRepository(private val movieDao: MovieDao) {
     fun getAllMovies(): List<Movie> {
         return movieDao.getAllMovies()
     }
-    fun getMovieById(imdbID: String): Movie? {
+    private fun getMovieById(imdbID: String): Movie? {
         return movieDao.getMovieById(imdbID) // Fetch the movie from the database by ID
     }
 }

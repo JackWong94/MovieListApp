@@ -34,8 +34,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -255,7 +255,7 @@ fun LoginScreen(navController: NavController, onLoginSuccess: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Screen.MainScreen.route) }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -400,7 +400,7 @@ fun SignUpScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -517,7 +517,7 @@ fun MovieListScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = { showDialog = true }) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout")
                     }
                     // Logout confirmation dialog
                     if (showDialog) {
@@ -679,7 +679,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Screen.MovieListScreen.route) }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
