@@ -509,7 +509,7 @@ fun MovieListScreen(
 
     // Log all movies retrieved
     if (movieList.isNotEmpty()) {
-        Log.d("JACK", "Retrieved movies list: ${movieList.joinToString { it.Title }}")
+        Log.d("JACK", "Retrieved movies list: ${movieList.joinToString { it.title }}")
     }
     Scaffold(
         topBar = {
@@ -611,7 +611,7 @@ fun MovieListScreen(
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(movieList.size) { index ->
-                        MovieButton(imageUrl = movieList[index].Poster, onClickDetail  = {
+                        MovieButton(imageUrl = movieList[index].poster, onClickDetail  = {
                             movieViewModel.setMovieId(movieList[index].imdbID)
                             onClickDetail()
                         }
@@ -700,7 +700,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     val defaultPoster =
                         R.drawable.no_internet_image
                     val painter =
-                        rememberAsyncImagePainter(model = movieDetail?.Poster ?: defaultPoster)
+                        rememberAsyncImagePainter(model = movieDetail?.poster ?: defaultPoster)
 
                     Image(
                         painter = painter,
@@ -725,7 +725,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     Image(
                         contentScale = ContentScale.Fit,
                         painter = rememberAsyncImagePainter(
-                            model = movieDetail?.Poster ?: defaultPoster
+                            model = movieDetail?.poster ?: defaultPoster
                         ),
                         contentDescription = "Movie Poster",
                         modifier = Modifier
@@ -762,7 +762,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     Spacer(modifier = Modifier.height(10.dp)) // Add space
                     // Movie Title
                     Text(
-                        text = movieDetail?.Title ?: "N/A",
+                        text = movieDetail?.title ?: "N/A",
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp,
@@ -774,7 +774,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
 
                     // Movie Category
                     Text(
-                        text = "Category: ${movieDetail?.Genre ?: "N/A"}",
+                        text = "Category: ${movieDetail?.genre ?: "N/A"}",
                         style = TextStyle(
                             fontSize = 15.sp,
                             color = AppThemeLightGrey,
@@ -796,7 +796,7 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                     )
                     // Movie Plot Summary
                     Text(
-                        text = movieDetail?.Plot ?: "N/A",
+                        text = movieDetail?.plot ?: "N/A",
                         style = TextStyle(
                             fontSize = 15.sp,
                             color = AppThemeLightGrey,
@@ -814,8 +814,9 @@ fun MovieDetailsScreen(navController: NavController, movieViewModel: MovieViewMo
                         contentPadding = PaddingValues(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        Log.d("JACK","ASDASDASDASD\n${movieDetail}")
                         movieDetail?.let { detail ->
-                            items(detail.Ratings) { rating ->
+                            items(detail.ratings) { rating ->
                                 val (source, value) = rating
                                 // Display each rating in a Card or any other desired layout
                                 Card(

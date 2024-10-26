@@ -29,41 +29,6 @@ interface MovieService {
     ): MovieDetailResponse
 }
 
-// Create a data class for the API response
-data class MovieResponse(
-    val Search: List<Movie>,
-    val totalResults: String,
-    val Response: String,
-    val Error: String? // Add this to capture any error messages
-)
-data class MovieDetailResponse(
-    val Title: String,
-    val Year: String,
-    val Rated: String,
-    val Released: String,
-    val Runtime: String,
-    val Genre: String,
-    val Director: String,
-    val Writer: String,
-    val Actors: String,
-    val Plot: String,
-    val Language: String,
-    val Country: String,
-    val Awards: String,
-    val Poster: String,
-    val Ratings: List<Rating>,
-    val Metascore: String,
-    val imdbRating: String,
-    val imdbVotes: String,
-    val imdbID: String,
-    val Type: String,
-    val DVD: String,
-    val BoxOffice: String,
-    val Production: String,
-    val Website: String,
-    val Response: String,
-    val Error: String? // Optional field for error messages
-)
 class MovieViewModel(repository: MovieRepository?) : ViewModel() {
     private val movieService: MovieService
     private val _repository = repository
@@ -85,17 +50,17 @@ class MovieViewModel(repository: MovieRepository?) : ViewModel() {
             try {
                 Log.d("JACK", "Retrieving....")
                 val response = movieService.getMovies("6fc87060", searchQuery, "movie")
-                if (response.Response == "True") {
+                if (response.response == "True") {
                     _movieList.clear()
-                    _movieList.addAll(response.Search)
+                    _movieList.addAll(response.search)
                     Log.d("JACK", "Success")
                     // Save each movie to the local database one by one
-                    response.Search.forEach { movie ->
+                    response.search.forEach { movie ->
                         val movieEntity = Movie(
                             imdbID = movie.imdbID,
-                            Title = movie.Title,
-                            Year = movie.Year,
-                            Poster = movie.Poster
+                            title = movie.title,
+                            year = movie.year,
+                            poster = movie.poster
                         )
                         withContext(Dispatchers.IO) {
                             _repository?.addMovie(movieEntity) // Non-blocking add to database
@@ -137,40 +102,41 @@ class MovieViewModel(repository: MovieRepository?) : ViewModel() {
                 try {
                     Log.d("JACK", "Fetching movie details...")
                     val response = movieService.getMovieDetails("6fc87060", movieId)
-                    if (response.Response == "True") {
+                    Log.d("JACK", "XXXXXXXXXXXXXXXXXXXXXXXXXXX\n${response}")
+                    if (response.response == "True") {
                         val movieDetail = MovieDetail(
-                            Title = response.Title,
-                            Year = response.Year,
-                            Rated = response.Rated,
-                            Released = response.Released,
-                            Runtime = response.Runtime,
-                            Genre = response.Genre,
-                            Director = response.Director,
-                            Writer = response.Writer,
-                            Actors = response.Actors,
-                            Plot = response.Plot,
-                            Language = response.Language,
-                            Country = response.Country,
-                            Awards = response.Awards,
-                            Poster = response.Poster,
-                            Ratings = response.Ratings,
-                            Metascore = response.Metascore,
+                            title = response.title,
+                            year = response.year,
+                            rated = response.rated,
+                            released = response.released,
+                            runtime = response.runtime,
+                            genre = response.genre,
+                            director = response.director,
+                            writer = response.writer,
+                            actors = response.actors,
+                            plot = response.plot,
+                            language = response.language,
+                            country = response.country,
+                            awards = response.awards,
+                            poster = response.poster,
+                            ratings = response.ratings,
+                            metascore = response.metascore,
                             imdbRating = response.imdbRating,
                             imdbVotes = response.imdbVotes,
                             imdbID = response.imdbID,
-                            Type = response.Type,
-                            DVD = response.DVD,
-                            BoxOffice = response.BoxOffice,
-                            Production = response.Production,
-                            Website = response.Website,
-                            Response = response.Response,
-                            Error = response.Error
+                            type = response.type,
+                            dvd = response.dvd,
+                            boxOffice = response.boxOffice,
+                            production = response.production,
+                            website = response.website,
+                            response = response.response,
+                            error = response.error
                         )
                         _movieDetail.value = movieDetail
                         Log.d("JACK", "Movie details retrieved successfully $movieDetail")
                     } else {
                         _movieDetail.value = null // Handle error
-                        Log.d("JACK", "Failed to fetch movie details: ${response.Error}")
+                        Log.d("JACK", "Failed to fetch movie details: ${response.error}")
                     }
                 } catch (e: Exception) {
                     _movieDetail.value = null // Handle error case
